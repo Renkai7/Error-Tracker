@@ -8,6 +8,7 @@ const pool = new Pool({
 	port: process.env.DB_PORT,
 });
 
+// show all users
 async function getAllUsers() {
 	try {
 		const client = await pool.connect();
@@ -22,22 +23,33 @@ async function getAllUsers() {
 	}
 }
 
-async function addNewUser() {
+// add a new user
+async function addNewUser(user) {
 	try {
-		const { first_name, last_name, email, date_of_birth } = req.body;
+		const { first_name, last_name, email, date_of_birth } = user;
 		const client = await pool.connect();
-		const query =
-			"INSERT INTO student (first_name, last_name, email, date_of_birth) VALUES ($1, $2, $3, $4::DATE) RETURNING *";
-		const values = [fname, lname, email, dob];
+		const dateOfBirthClause = date_of_birth ? ", date_of_birth" : "";
+		const dateOfBirthValue = date_of_birth ? ", $4::DATE" : "";
+		const query = `
+      INSERT INTO "user" (first_name, last_name, email${dateOfBirthClause})
+      VALUES ($1, $2, $3${dateOfBirthValue})
+      RETURNING *
+    `;
+		const values = [first_name, last_name, email];
+
+		// Push date_of_birth to values array if it's provided
+		if (date_of_birth) {
+			values.push(date_of_birth);
+		}
 		const result = await client.query(query, values);
-		const insertedStudent = result.rows[0];
+		const insertedUser = result.rows[0];
 		client.release();
 
-		return insertedStudent;
+		return insertedUser;
 	} catch (error) {
 		console.error("Error executing query", error);
 		throw error;
 	}
 }
 
-module.exports = { getAllUsers };
+module.exports = { getAllUsers, addNewUser };
