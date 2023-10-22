@@ -6,7 +6,6 @@ async function httpGetAllUsers(req, res) {
 }
 
 async function httpAddNewUser(req, res) {
-	// const user = req.body;
 	const { first_name, last_name, email, date_of_birth } = req.body;
 
 	if (!first_name || !last_name || !email) {
